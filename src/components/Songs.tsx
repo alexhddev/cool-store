@@ -233,7 +233,7 @@ function Songs({ signOut, user }: WithAuthenticatorProps) {
 
     function renderSongImage(){
         if (!currentImageUrl) return null;
-        return <img src={currentImageUrl} alt="Song cover art" />
+        return <img src={currentImageUrl} alt="Song cover art" width={500}/>
     }
 
     return (
