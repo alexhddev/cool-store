@@ -11,17 +11,25 @@ function App() {
 
     
   function deleteTodo(id: string) {
-    client.models.Todo.delete({ id })
+    client.models.Todo.delete({ id }, {
+      authMode: 'userPool'
+    
+    })
   }
 
   useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
+    const sub = client.models.Todo.observeQuery().subscribe({
+      next: ({ items, isSynced }) => {
+        setTodos([...items]);
+      },
     });
+    return () => sub.unsubscribe();
   }, []);
 
   function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
+    client.models.Todo.create({ content: window.prompt("Todo content") }, {
+      authMode: 'userPool'
+    });
   }
 
   return (
@@ -37,13 +45,6 @@ function App() {
             </li>
         ))}
       </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
-          Review next step of this tutorial.
-        </a>
-      </div>
       <button onClick={signOut}>Sign out</button>
     </main>
   );
