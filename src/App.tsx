@@ -6,7 +6,7 @@ import { generateClient } from "aws-amplify/data";
 const client = generateClient<Schema>();
 
 function App() {
-  const { signOut } = useAuthenticator();
+  const { signOut, user } = useAuthenticator();
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
 
     
@@ -34,7 +34,7 @@ function App() {
 
   return (
     <main>
-      <h1>My todos</h1>
+      <h1>{user?.signInDetails?.loginId} todos</h1>
       <button onClick={createTodo}>+ new</button>
       <ul>
         {todos.map((todo) => (          
