@@ -19,7 +19,7 @@ function App() {
 
   useEffect(() => {
     const sub = client.models.Todo.observeQuery().subscribe({
-      next: ({ items, isSynced }) => {
+      next: ({ items }) => {
         setTodos([...items]);
       },
     });
