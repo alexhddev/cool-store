@@ -1,4 +1,5 @@
 import { defineStorage, defineFunction } from "@aws-amplify/backend";
+import {  generateThumb } from '../functions/resize/resource'
 
 export const storage = defineStorage({
   name: "amplify-gen2-files",
@@ -13,12 +14,5 @@ export const secondStorage = defineStorage({
 });
 
 export const imagesStorage = defineStorage({
-  name: "images",
-  triggers: {
-    onUpload: defineFunction({
-      name: "onUpload",
-      entry:'./onUploadHandler.ts'
-
-    })
-  }
+  name: "images"
 });
