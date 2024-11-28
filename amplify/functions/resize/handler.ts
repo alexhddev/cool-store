@@ -12,11 +12,9 @@ export const handler: S3Handler = async (event) => {
 
     try {
         const bucketName = event.Records[0].s3.bucket.name
-        const objectKeys = event.Records.map((record) => record.s3.object.key);
+        const objectKeys = event.Records.map((record) => record.s3.object.key );
 
-        const keys = decodeKeys(objectKeys);
-
-        for (const key in keys) {
+        for (const key of objectKeys) {
             if (key.startsWith(THUMBNAIL_PREFIX)) {
                 continue;
             }
@@ -25,6 +23,7 @@ export const handler: S3Handler = async (event) => {
                 Bucket: bucketName,
                 Key: key                
             })
+            console.log(JSON.stringify(getObjectCommand))
 
             const imageObject = await s3Client.send(getObjectCommand)
 
