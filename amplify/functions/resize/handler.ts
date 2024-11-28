@@ -1,11 +1,11 @@
 import type { S3Handler } from 'aws-lambda';
 import { S3 } from '@aws-sdk/client-s3';
-import sharp from 'sharp';
+import { Jimp, JimpMime } from "jimp";
 
 const s3 = new S3();
 const THUMBNAIL_WIDTH = 100; // You can adjust this size
 const THUMBNAIL_HEIGHT = 100;
-const IMAGES_PREFIX = 'images'
+const IMAGES_PREFIX = 'originals'
 const THUMBNAIL_PREFIX = 'thumbs'
 
 export const handler: S3Handler = async (event) => {
@@ -34,12 +34,7 @@ export const handler: S3Handler = async (event) => {
             const imageBuffer = Buffer.from(await imageObject.Body.transformToByteArray());
 
             // Generate thumbnail
-            const thumbnailBuffer = await sharp(imageBuffer)
-                .resize(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, {
-                    fit: 'cover',
-                    withoutEnlargement: true
-                })
-                .toBuffer();
+            const thumbnailBuffer = await resizeImage(imageBuffer);
 
             // remove the prefix from the key
             const keyWithoutPrefix = key.replace(`${IMAGES_PREFIX}/`, '');
@@ -66,6 +61,23 @@ export const handler: S3Handler = async (event) => {
     }
 
 };
+
+function resizeImage(imageBuffer: Buffer): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+        Jimp.read(imageBuffer)
+            .then((image) => {
+                image.resize({w:THUMBNAIL_WIDTH})
+                image.getBuffer(JimpMime.png, (err: Error, buffer:Buffer) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(buffer);
+                    }
+                });
+            })
+            .catch((err) => reject(err));
+    });
+}
 
 function decodeKeys(undecodedKeys: string[]): string[] {
     return undecodedKeys.map((key) => decodeURIComponent(key.replace(/\+/g, ' ')));
