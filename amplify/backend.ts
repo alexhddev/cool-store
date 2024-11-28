@@ -1,7 +1,7 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
-import { storage, secondStorage, imagesStorage } from './storage/resource';
+import { imagesStorage } from './storage/resource';
 import { generateThumb } from './functions/resize/resource';
 import { EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
@@ -9,8 +9,6 @@ import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 const backend = defineBackend({
   auth,
   data,
-  storage,
-  secondStorage,
   imagesStorage,
   generateThumb
 });

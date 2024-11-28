@@ -1,8 +1,8 @@
 import type { S3Handler } from 'aws-lambda';
-import { S3 } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Jimp, JimpMime } from "jimp";
 
-const s3 = new S3();
+const s3Client = new S3Client();
 const THUMBNAIL_WIDTH = 100; // You can adjust this size
 const THUMBNAIL_HEIGHT = 100;
 const IMAGES_PREFIX = 'originals'
@@ -21,10 +21,12 @@ export const handler: S3Handler = async (event) => {
                 continue;
             }
 
-            const imageObject = await s3.getObject({
+            const getObjectCommand = new GetObjectCommand({
                 Bucket: bucketName,
-                Key: key
+                Key: key                
             })
+
+            const imageObject = await s3Client.send(getObjectCommand)
 
             if (!imageObject.Body) {
                 throw new Error('No image data received from S3');
@@ -42,12 +44,14 @@ export const handler: S3Handler = async (event) => {
             const thumbnailKey = `${THUMBNAIL_PREFIX}/${keyWithoutPrefix}`;
 
             // Upload the thumbnail to S3
-            await s3.putObject({
+            const putObjectCommand = new PutObjectCommand({
                 Bucket: bucketName,
                 Key: thumbnailKey,
                 Body: thumbnailBuffer,
                 ContentType: 'image/jpeg' // Adjust content type as needed
             });
+
+            await s3Client.send(putObjectCommand)
 
             console.log(`Successfully created thumbnail for ${keyWithoutPrefix}`);
 

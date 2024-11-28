@@ -8,6 +8,7 @@ export const generateThumb = defineFunction({
 
   bundling: {
     minify: false
-  }
+  },
+  timeoutSeconds: 60
 
 });

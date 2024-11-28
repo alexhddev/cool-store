@@ -1,18 +1,9 @@
-import { defineStorage, defineFunction } from "@aws-amplify/backend";
-import {  generateThumb } from '../functions/resize/resource'
-
-export const storage = defineStorage({
-  name: "amplify-gen2-files",
-  access: (allow) => ({
-    "images/*": [allow.authenticated.to(["read", "write", "delete"])],
-  }),
-  isDefault: true
-});
-
-export const secondStorage = defineStorage({
-  name: "amplifyTeamDrive",
-});
+import { defineStorage } from "@aws-amplify/backend";
+import { generateThumb } from '../functions/resize/resource'
 
 export const imagesStorage = defineStorage({
-  name: "images"
+  name: "images",
+  access: (allow) => ({
+    'images/*': [allow.resource(generateThumb).to(["read", "write", "delete"])]
+  })
 });
