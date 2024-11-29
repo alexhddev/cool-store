@@ -23,7 +23,6 @@ export const handler: S3Handler = async (event) => {
                 Bucket: bucketName,
                 Key: key                
             })
-            console.log(JSON.stringify(getObjectCommand))
 
             const imageObject = await s3Client.send(getObjectCommand)
 
@@ -32,10 +31,10 @@ export const handler: S3Handler = async (event) => {
             }
 
             // Convert the image body to buffer
-            const imageBuffer = Buffer.from(await imageObject.Body.transformToByteArray());
+            const imageBuffer:Buffer = Buffer.from(await imageObject.Body.transformToByteArray())
 
             // Generate thumbnail
-            const thumbnailBuffer = await resizeImage(imageBuffer);
+            const thumbnailBuffer = await resizeImage(imageBuffer, key);
 
             // remove the prefix from the key
             const keyWithoutPrefix = key.replace(`${IMAGES_PREFIX}/`, '');
@@ -54,9 +53,6 @@ export const handler: S3Handler = async (event) => {
 
             console.log(`Successfully created thumbnail for ${keyWithoutPrefix}`);
 
-
-
-
         }
 
     } catch (error) {
@@ -65,21 +61,31 @@ export const handler: S3Handler = async (event) => {
 
 };
 
-function resizeImage(imageBuffer: Buffer): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        Jimp.read(imageBuffer)
-            .then((image) => {
-                image.resize({w:THUMBNAIL_WIDTH})
-                image.getBuffer(JimpMime.png, (err: Error, buffer:Buffer) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(buffer);
-                    }
-                });
-            })
-            .catch((err) => reject(err));
-    });
+
+
+export async function resizeImage(imageBuffer: Buffer, key: string): Promise<Buffer> {
+    const image = await Jimp.read(imageBuffer)
+    const resized = await image.resize({w:THUMBNAIL_WIDTH}).getBuffer(getMimeType(key));
+    return resized;
+}
+
+function getMimeType(key:string) {
+    const extension = key.split('.').pop();
+    switch (extension) {
+        case 'jpg':
+        case 'jpeg':
+            return JimpMime.jpeg;
+        case 'png':
+            return JimpMime.png;
+        case 'bmp':
+            return JimpMime.bmp;
+        case 'tiff':
+            return JimpMime.tiff;
+        case 'gif':
+            return JimpMime.gif;
+        default:
+            throw new Error(`Unsupported image type: ${extension}`);
+    }
 }
 
 function decodeKeys(undecodedKeys: string[]): string[] {
