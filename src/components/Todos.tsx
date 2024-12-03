@@ -3,10 +3,11 @@ import { useAuthenticator } from '@aws-amplify/ui-react';
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>() as any;
 
 function Todos() {
   const { signOut, user } = useAuthenticator();
+  // @ts-ignore
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
 
     
@@ -19,6 +20,7 @@ function Todos() {
 
   useEffect(() => {
     const sub = client.models.Todo.observeQuery().subscribe({
+      // @ts-ignore
       next: ({ items }) => {
         setTodos([...items]);
       },

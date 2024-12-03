@@ -7,11 +7,6 @@ specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization(allow => [allow.owner()]),
   Song: a
     .model({
       id: a.id().required(),
@@ -19,6 +14,15 @@ const schema = a.schema({
       coverArtPath: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
+  Game: a.
+    model({
+      id: a.id().required(),
+      playerX: a.string(),
+      player0: a.string(),
+      moves: a.enum([ 'X1','X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9',
+        'O1','O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9',
+      ])
+    }).authorization((allow) => [allow.publicApiKey()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

@@ -1,12 +1,12 @@
-import Songs from "./components/Songs";
 import "./App.css";
+import GameWrapper from "./components/GameWrapper";
 
 function App() {
 
 
   return (
     <main>
-      <Songs></Songs>
+      <GameWrapper></GameWrapper>
     </main>
   );
 }
