@@ -19,7 +19,10 @@ function MainGame(props: { gameId: string }) {
                 const sub = client.models.Game.onUpdate().subscribe({
                     next: (data) => {
                         setGame(data)
-                        console.log('game updated')
+                        console.log('received data: ' + JSON.stringify(data))
+                    },
+                    error: (err) => {
+                        console.log('error: ' + err)
                     }
                 });
 
@@ -28,7 +31,7 @@ function MainGame(props: { gameId: string }) {
                 const game = await client.models.Game.get({
                     id: props.gameId
                 })
-                if(game.data) {
+                if (game.data) {
                     setGame(game.data)
                 }
             }
@@ -38,7 +41,7 @@ function MainGame(props: { gameId: string }) {
     }, [])
 
     async function chooseSide(arg: 'X' | 'O') {
-        if(arg === 'X') {
+        if (arg === 'X') {
             await client.models.Game.update({
                 id: props.gameId,
                 playerX: userName
@@ -48,7 +51,7 @@ function MainGame(props: { gameId: string }) {
                 playerX: userName
             })
         }
-        if(arg === 'O') {
+        if (arg === 'O') {
             await client.models.Game.update({
                 id: props.gameId,
                 player0: userName
