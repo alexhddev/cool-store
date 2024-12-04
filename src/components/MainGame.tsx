@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import GameTable from "./GameTable";
 
 
 function MainGame(props: { gameId: string }) {
 
     const client = generateClient<Schema>();
     const [game, setGame] = useState<Schema['Game']['type']>();
-    const [sideChosen, setSideChosen] = useState(false);
+    const [side, setSide] = useState<'X'|'0'| undefined>(undefined);
 
     const userName = useAuthenticator().user.signInDetails?.loginId
 
@@ -42,7 +43,7 @@ function MainGame(props: { gameId: string }) {
         handleData()
     }, [])
 
-    async function chooseSide(arg: 'X' | 'O') {
+    async function chooseSide(arg: 'X' | '0') {
         if (arg === 'X') {
             await client.models.Game.update({
                 id: props.gameId,
@@ -53,7 +54,7 @@ function MainGame(props: { gameId: string }) {
                 playerX: userName
             })
         }
-        if (arg === 'O') {
+        if (arg === '0') {
             await client.models.Game.update({
                 id: props.gameId,
                 player0: userName
@@ -65,11 +66,11 @@ function MainGame(props: { gameId: string }) {
         }
 
         window.alert(`You chose ${arg}`)
-        setSideChosen(true)
+        setSide(arg)
     }
 
     function renderSideChooser() {
-        if (sideChosen) {
+        if (side) {
             return null
         }
         function renderChooseX() {
@@ -79,7 +80,7 @@ function MainGame(props: { gameId: string }) {
         }
         function renderChooseO() {
             if (game?.player0 == undefined) {
-                return <button onClick={() => chooseSide('O')}>Choose O</button>
+                return <button onClick={() => chooseSide('0')}>Choose O</button>
             }
         }
         return (
@@ -92,11 +93,21 @@ function MainGame(props: { gameId: string }) {
         )
     }
 
+    function renderGameTable() {
+        if (game?.player0 && game.playerX && side) {
+            return <GameTable side={side}/>
+        }
+
+    }
+
     return (
         <div>
             <h1>Main Game</h1>
             <p>Game ID: {props.gameId}</p>
             {renderSideChooser()}
+            <br/>
+            {renderGameTable()}
+            
         </div>
     );
 
