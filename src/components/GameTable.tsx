@@ -1,9 +1,11 @@
 import {  useState } from "react";
+import { Xor0, allowedNumbers, cell } from "./MainGame";
 
-
-
-
-function GameTable(props: {side: 'X' | '0'}) {
+function GameTable(props: {
+    side: Xor0,
+    sendUpdate: (update: cell)=>void
+  //  receiveUpdates: (update: cell[])=>void
+}) {
 
     const [gameState, setGameState] = useState([
         ['', '', ''],
@@ -11,13 +13,12 @@ function GameTable(props: {side: 'X' | '0'}) {
         ['', '', '']
     ])
 
-    function clickCell(row: number, col: number) {
+    function clickCell(row: allowedNumbers, col: allowedNumbers) {
         const newGameState = [...gameState]
         newGameState[row][col] = props.side
         setGameState(newGameState)
+        props.sendUpdate({row, col, side: props.side})
     }
-
-
 
     return <div>
         <button onClick={()=>clickCell(0, 0)}>{gameState[0][0]}</button> <button onClick={()=>clickCell(0, 1)}>{gameState[0][1]}</button> <button onClick={()=>clickCell(0, 2)}>{gameState[0][2]}</button><br/>

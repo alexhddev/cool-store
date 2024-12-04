@@ -4,12 +4,19 @@ import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import GameTable from "./GameTable";
 
+export type Xor0 = 'X' | '0'
+export type allowedNumbers = 0 | 1 | 2
+export type cell = {
+  row: allowedNumbers,
+  col: allowedNumbers,
+  side: Xor0
+}
 
 function MainGame(props: { gameId: string }) {
 
     const client = generateClient<Schema>();
     const [game, setGame] = useState<Schema['Game']['type']>();
-    const [side, setSide] = useState<'X'|'0'| undefined>(undefined);
+    const [side, setSide] = useState<Xor0 | undefined>(undefined);
 
     const userName = useAuthenticator().user.signInDetails?.loginId
 
@@ -93,9 +100,17 @@ function MainGame(props: { gameId: string }) {
         )
     }
 
+    async function updateCell(cell: cell) {
+        const gameMoves = game!.moves ? game!.moves : []
+        const updateResult = await client.models.Game.update({
+            id: props.gameId,
+            moves: [...gameMoves, `${cell.row}${cell.col}${cell.side}`]        
+        })
+    }
+
     function renderGameTable() {
         if (game?.player0 && game.playerX && side) {
-            return <GameTable side={side}/>
+            return <GameTable side={side} sendUpdate={updateCell}/>
         }
 
     }
@@ -105,9 +120,9 @@ function MainGame(props: { gameId: string }) {
             <h1>Main Game</h1>
             <p>Game ID: {props.gameId}</p>
             {renderSideChooser()}
-            <br/>
+            <br />
             {renderGameTable()}
-            
+
         </div>
     );
 

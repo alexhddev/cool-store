@@ -1,11 +1,5 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any unauthenticated user can "create", "read", "update", 
-and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a.schema({
   Song: a
     .model({
@@ -19,11 +13,10 @@ const schema = a.schema({
       id: a.id().required(),
       playerX: a.string(),
       player0: a.string(),
-      moves: a.enum([ 'X1','X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9',
-        'O1','O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9',
-      ])
-    }).authorization((allow) => [allow.publicApiKey()]),
-});
+      moves: a.string().array(),
+    })
+}).authorization((allow) => [allow.publicApiKey()])
+
 
 export type Schema = ClientSchema<typeof schema>;
 
