@@ -14,28 +14,30 @@ function MainGame(props: { gameId: string }) {
 
     useEffect(() => {
         const handleData = async () => {
-
-            if (game) {
-                const sub = client.models.Game.onUpdate().subscribe({
-                    next: (data) => {
-                        setGame(data)
-                        console.log('received data: ' + JSON.stringify(data))
-                    },
-                    error: (err) => {
-                        console.log('error: ' + err)
-                    }
-                });
-
-                return () => sub.unsubscribe();
-            } else {
-                const game = await client.models.Game.get({
-                    id: props.gameId
-                })
-                if (game.data) {
-                    setGame(game.data)
-                }
+            const game = await client.models.Game.get({
+                id: props.gameId
+            })
+            if (game.data) {
+                setGame(game.data)
             }
 
+            // subscribe for game updates
+            const sub = client.models.Game.onUpdate({
+                filter: {
+                    id: {
+                        eq: props.gameId
+                    }
+                }
+            }).subscribe({
+                next: (data) => {
+                    setGame(data)
+                    console.log('received data: ' + JSON.stringify(data))
+                },
+                error: (err) => {
+                    console.log('error: ' + err)
+                }
+            });
+            return () => sub.unsubscribe();
         }
         handleData()
     }, [])
