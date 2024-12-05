@@ -3,9 +3,10 @@ import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 
-export type Xor0 = 'X' | '0'
-export type allowedNumbers = 0 | 1 | 2
-export type cell = {
+type Xor0 = 'X' | '0'
+type cellState = '' | Xor0
+type allowedNumbers = 0 | 1 | 2
+type cell = {
     row: allowedNumbers,
     col: allowedNumbers,
     side: Xor0
@@ -16,7 +17,7 @@ function MainGame(props: { gameId: string }) {
     const client = generateClient<Schema>();
     const [game, setGame] = useState<Schema['Game']['type']>();
     const [side, setSide] = useState<Xor0 | 'notSetYet'>('notSetYet');
-    const [gameState, setGameState] = useState([
+    const [gameState, setGameState] = useState<cellState[][]>([
         ['', '', ''],
         ['', '', ''],
         ['', '', '']
@@ -59,6 +60,7 @@ function MainGame(props: { gameId: string }) {
             newGameState[cell.row][cell.col] = cell.side
         })
         setGameState(newGameState)
+        checkForVictoryAndShowMessage(newGameState)
     }
 
     function parseUpdates(moves: Array<string | null>): cell[] {
@@ -137,14 +139,63 @@ function MainGame(props: { gameId: string }) {
 
     async function clickCell(row: allowedNumbers, col: allowedNumbers) {
         if (gameState[row][col] !== '') {
-            return
+            return;
         }
+        if(game?.lastMoveBy && game.lastMoveBy === side) {
+            window.alert('Not your turn')
+            return;
+        }
+        console.log('last move by: ' + game?.lastMoveBy)
         const newGameState = [...gameState]
-        newGameState[row][col] = side
-        setGameState(newGameState)
+
         if (side !== 'notSetYet') {
+            newGameState[row][col] = side
+            setGameState(newGameState)
             await updateCell({ row, col, side })
         }
+        checkForVictoryAndShowMessage(newGameState)
+
+    }
+
+    function checkForVictoryAndShowMessage(cells: cellState[][]){
+        const winner = checkForVictory(cells)
+        if (winner) {
+            if (winner === side) {
+                window.alert('You won!')
+            } else {
+                window.alert('You lost!')
+            }
+        }
+    }
+
+    function checkForVictory(cells: cellState[][]): cellState{
+        // check for winning combinations and return the winner if there is one
+        if (cells[0][0] === cells[0][1] && cells[0][1] === cells[0][2] && cells[0][0] !== '') {
+            return cells[0][0]
+        }
+        if (cells[1][0] === cells[1][1] && cells[1][1] === cells[1][2] && cells[1][0] !== '') {
+            return cells[1][0]
+        }
+        if (cells[2][0] === cells[2][1] && cells[2][1] === cells[2][2] && cells[2][0] !== '') {
+            return cells[2][0]
+        }
+        if (cells[0][0] === cells[1][0] && cells[1][0] === cells[2][0] && cells[0][0] !== '') {
+            return cells[0][0]
+        }
+        if (cells[0][1] === cells[1][1] && cells[1][1] === cells[2][1] && cells[0][1] !== '') {
+            return cells[0][1]
+        }
+        if (cells[0][2] === cells[1][2] && cells[1][2] === cells[2][2] && cells[0][2] !== '') {
+            return cells[0][2]
+        }
+        if (cells[0][0] === cells[1][1] && cells[1][1] === cells[2][2] && cells[0][0] !== '') {
+            return cells[0][0]
+        }
+        if (cells[0][2] === cells[1][1] && cells[1][1] === cells[2][0] && cells[0][2] !== '') {
+            return cells[0][2]
+        }
+        return ''
+
     }
 
     function renderGameTable() {
