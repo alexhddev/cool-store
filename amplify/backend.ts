@@ -13,6 +13,11 @@ const backend = defineBackend({
   generateThumb
 });
 
+backend.data.resources.cfnResources.amplifyDynamoDbTables['Game'].timeToLiveAttribute = {
+  enabled: true,
+  attributeName: 'expireAt'
+}
+
 backend.imagesStorage.resources.bucket.addEventNotification(
   EventType.OBJECT_CREATED_PUT,
   new LambdaDestination(backend.generateThumb.resources.lambda),
