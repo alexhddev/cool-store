@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import GameTable from "./GameTable";
 
 export type Xor0 = 'X' | '0'
 export type allowedNumbers = 0 | 1 | 2
@@ -17,20 +16,17 @@ function MainGame(props: { gameId: string }) {
     const client = generateClient<Schema>();
     const [game, setGame] = useState<Schema['Game']['type']>();
     const [side, setSide] = useState<Xor0 | 'notSetYet'>('notSetYet');
-    const [updatedCells, setUpdatedCells] = useState<cell[]>([])
+    const [gameState, setGameState] = useState([
+        ['', '', ''],
+        ['', '', ''],
+        ['', '', '']
+    ])
 
     const userName = useAuthenticator().user.signInDetails?.loginId
 
     useEffect(() => {
         const handleData = async () => {
-            // const game = await client.models.Game.get({
-            //     id: props.gameId
-            // })
-            // if (game.data) {
-            //     setGame(game.data)
-            // }
 
-            // subscribe for game updates
             const sub = client.models.Game.onUpdate({
                 filter: {
                     id: {
@@ -43,10 +39,8 @@ function MainGame(props: { gameId: string }) {
             }).subscribe({
                 next: (data) => {
                     setGame(data)
-                    console.log('received data:')
-                    console.log(data)
                     if (data.moves) {
-                        setUpdatedCells(parseUpdates(data.moves))
+                        updateCells(data.moves)
                     }
                 },
                 error: (err) => {
@@ -57,6 +51,31 @@ function MainGame(props: { gameId: string }) {
         }
         handleData()
     }, [])
+
+    function updateCells(moves: Array<string | null>){
+        const cells = parseUpdates(moves)
+        const newGameState = [...gameState]
+        cells.forEach((cell: cell) => {
+            newGameState[cell.row][cell.col] = cell.side
+        })
+        setGameState(newGameState)
+    }
+
+    function parseUpdates(moves: Array<string | null>): cell[] {
+        const parsedCells: cell[] = []
+        for (const move of moves) {
+            if (move) {
+                if (move[2] !== side) {
+                    parsedCells.push({
+                        row: parseInt(move[0]) as allowedNumbers,
+                        col: parseInt(move[1]) as allowedNumbers,
+                        side: move[2] as Xor0
+                    }) 
+                }           
+            }
+        }
+        return parsedCells
+    }
 
     async function chooseSide(arg: 'X' | '0') {
         if (arg === 'X') {
@@ -79,9 +98,8 @@ function MainGame(props: { gameId: string }) {
                 player0: userName
             })
         }
-
-        window.alert(`You chose ${arg}`)
         setSide(arg)
+        window.alert(`You chose ${arg}`)
     }
 
     function renderSideChooser() {
@@ -114,23 +132,28 @@ function MainGame(props: { gameId: string }) {
             id: props.gameId,
             moves: [...gameMoves, `${cell.row}${cell.col}${cell.side}`],
             lastMoveBy: side
-
         })
     }
 
-    function parseUpdates(moves: Array<string | null>): cell[] {
-        return moves.map((cell: string | null) => {
-            return {
-                row: parseInt(cell![0]) as allowedNumbers,
-                col: parseInt(cell![1]) as allowedNumbers,
-                side: cell![2] as Xor0
-            }
-        })
+    async function clickCell(row: allowedNumbers, col: allowedNumbers) {
+        if (gameState[row][col] !== '') {
+            return
+        }
+        const newGameState = [...gameState]
+        newGameState[row][col] = side
+        setGameState(newGameState)
+        if (side !== 'notSetYet') {
+            await updateCell({ row, col, side })
+        }
     }
 
     function renderGameTable() {
         if (game?.player0 && game.playerX && side !== 'notSetYet') {
-            return <GameTable side={side} sendUpdate={updateCell} updatedCells={updatedCells} />
+            return <div>
+            <button onClick={() => clickCell(0, 0)}>{gameState[0][0]}</button> <button onClick={() => clickCell(0, 1)}>{gameState[0][1]}</button> <button onClick={() => clickCell(0, 2)}>{gameState[0][2]}</button><br />
+            <button onClick={() => clickCell(1, 0)}>{gameState[1][0]}</button> <button onClick={() => clickCell(1, 1)}>{gameState[1][1]}</button> <button onClick={() => clickCell(1, 2)}>{gameState[1][2]}</button><br />
+            <button onClick={() => clickCell(2, 0)}>{gameState[2][0]}</button> <button onClick={() => clickCell(2, 1)}>{gameState[2][1]}</button> <button onClick={() => clickCell(2, 2)}>{gameState[2][2]}</button><br />
+        </div>
         }
 
     }
