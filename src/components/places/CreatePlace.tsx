@@ -13,17 +13,19 @@ function CreatePlace() {
     const [placeName, setPlaceName] = useState<string>('');
     const [placeDescription, setPlaceDescription] = useState<string>('');
     const [placePhotos, setPlacePhotos] = useState<File[]>([]);
-    const [placePhotosUrls, setPlacePhotosUrls] = useState<string[]>([]);
 
     async function handleSubmit(event: SyntheticEvent) {
         event.preventDefault();
+        let placePhotosUrls:string[] = [];
         if (placeName && placeDescription) {
             if (placePhotos){
-                await uploadPhotos(placePhotos)
+                const urls = await uploadPhotos(placePhotos)
+                placePhotosUrls = urls;
             }
             const place = await client.create({
                 name: placeName,
-                description: placeDescription
+                description: placeDescription,
+                photos: placePhotosUrls
             });
             console.log(place);
         }
@@ -38,13 +40,15 @@ function CreatePlace() {
     }
 
     async function uploadPhotos(files:File[]){
+        const urls:string[] = [];
         for (const file of files) {
             const result = await uploadData({
                 data: file,
-                path: `images/${file.name}`
+                path: `originals/${file.name}`
             }).result
-            console.log(result);
+            urls.push(result.path);
         }
+        return urls;   
     }
 
     function renderPhotos() {
