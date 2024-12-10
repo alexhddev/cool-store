@@ -1,4 +1,6 @@
 import "./App.css";
+import Places from "./components/places/Places";
+
 
 
 function App() {
@@ -6,7 +8,7 @@ function App() {
 
   return (
     <main>
-
+      <Places />
     </main>
   );
 }

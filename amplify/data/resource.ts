@@ -16,9 +16,25 @@ const schema = a.schema({
       moves: a.string().array(),
       lastMoveBy: a.string(),
       expireAt: a.timestamp()
-    })
-}).authorization((allow) => [allow.publicApiKey()])
-
+    }).authorization((allow) => [allow.publicApiKey()]),
+  Place: a.
+    model({
+      id: a.id().required(),
+      name: a.string().required(),
+      description: a.string().required(),
+      photos: a.string().array(),
+      thumbs: a.string().array(),
+      comments: a.hasMany('Comment', 'placeId'),
+      likesBy: a.string().array(),
+    }).authorization((allow) => [allow.publicApiKey()]),
+  Comment: a.
+    model({
+      placeId: a.id(),
+      place: a.belongsTo('Place', 'placeId'),
+      content: a.string().required(),
+      author: a.string().required(),
+    }).authorization((allow) => [allow.publicApiKey()]),
+});
 
 export type Schema = ClientSchema<typeof schema>;
 
