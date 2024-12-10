@@ -1,6 +1,6 @@
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../../amplify/data/resource";
-import { uploadData, getUrl, remove } from "aws-amplify/storage";
+import { uploadData } from "aws-amplify/storage";
 import { SyntheticEvent, useState } from "react";
 
 type CustomEvent = {
